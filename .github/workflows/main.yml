@@ -16,3 +16,15 @@ jobs:
 
       - name: Run Tests
         run: docker run -e CI=true ingjulianvega/docker-react npm run test
+      # Nuevo bloque para construir y subir la imagen automáticamente
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ingjulianvega/docker-react:latest
