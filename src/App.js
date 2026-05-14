@@ -7,7 +7,7 @@ function App() {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
-          Hi esto debe salir automático.
+          Hi there, working in CI/CD.
         </p>
         <a
           className="App-link"

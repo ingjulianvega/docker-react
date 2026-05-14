@@ -30,7 +30,22 @@ jobs:
           tags: ingjulianvega/docker-react:latest
       - name: Deploy to AWS ECS
         run: |
+          # 1. Ordenar la actualización (ya lo tenías)
           aws ecs update-service --cluster react-cluster-v2 --service react-frontend-service --force-new-deployment
+          
+          # 2. Lógica de espera: GitHub se queda aquí hasta que AWS termine
+          echo "Esperando a que el servicio se estabilice..."
+          aws ecs wait services-stable --cluster react-cluster-v2 --services react-frontend-service
+          
+          # 3. Lógica de extracción: Obtener la nueva IP automáticamente
+          TASK_ARN=$(aws ecs list-tasks --cluster react-cluster-v2 --service-name react-frontend-service --query 'taskArns[0]' --output text)
+          ENI_ID=$(aws ecs describe-tasks --cluster react-cluster-v2 --tasks $TASK_ARN --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' --output text)
+          PUBLIC_IP=$(aws ec2 describe-network-interfaces --network-interface-ids $ENI_ID --query 'NetworkInterfaces[0].Association.PublicIp' --output text)
+          
+          echo "-------------------------------------------------------"
+          echo "DESPLIEGUE EXITOSO"
+          echo "La nueva URL es: http://$PUBLIC_IP"
+          echo "-------------------------------------------------------"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
