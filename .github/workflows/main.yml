@@ -28,3 +28,10 @@ jobs:
         with:
           push: true
           tags: ingjulianvega/docker-react:latest
+      - name: Deploy to AWS ECS
+        run: |
+          aws ecs update-service --cluster react-cluster-v2 --service react-frontend-service --force-new-deployment
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
